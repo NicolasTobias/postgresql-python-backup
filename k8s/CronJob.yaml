@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pg-backup-daily
+spec:
+  schedule: "15 2 * * *"   # Todos los días 02:15
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          imagePullSecrets:
+            - name: ghrc-cred
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: backup
+              image: ghcr.io/nicolastobias/postgresql-python-backup:0.0.5   # o tu registry
+              imagePullPolicy: IfNotPresent
+              envFrom:
+                - secretRef:
+                    name: pg-backup-secrets
+                - configMapRef:
+                    name: pg-backup-config
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "1"
+                  memory: "1Gi"
+              volumeMounts:
+                - name: temp
+                  mountPath: /tmp
+          volumes:
+            - name: temp
+              emptyDir: {}
+

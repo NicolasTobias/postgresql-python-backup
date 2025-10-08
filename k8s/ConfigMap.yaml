@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pg-backup-config
+data:
+  S3_ENDPOINT: "https://s3.fr-par.scw.cloud"
+  S3_BUCKET: "level5-database-backups"
+  S3_PREFIX: "postgres"
+  INSTANCE_NAME: "arenero"
+  PG_DUMP_JOBS: "4"
+  RETENTION_DAYS: "120"  # 0 para desactivar
+
